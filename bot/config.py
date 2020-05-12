@@ -3,8 +3,10 @@
 from keys import keys
 import tweepy
 import logging
-
 logger = logging.getLogger()
+
+import configparser
+config = configparser.ConfigParser()
 
 #
 #retrieve tokens
@@ -27,3 +29,25 @@ def create_twitter_api():
 	logger.info("API successfully created")
 	return api
 
+
+
+def load_cfg():
+	config.read('settings.ini')
+	try:
+		for key in config['SETTINGS']:
+			print(key)
+	except Exception as e:
+		logger.error("Error parsing config file", exc_info=True)
+		logger.error(e)
+
+
+
+
+
+def save_cfg():
+	config['SETTINGS'] = {
+		'SleepTimer': '15',
+		'ImgFolder': '\\img\\'
+	}
+	with open('settings.ini', 'w') as configfile:
+		config.write(configfile)

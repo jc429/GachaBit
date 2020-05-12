@@ -1,0 +1,27 @@
+{
+	"current_pool" : "wave_1",
+
+	
+	"wave_1": {
+		"theme": "Mommy GF",
+		"pics": [
+
+			{
+				"name": "test",
+				"file": "test.png",
+				"rarity": 5
+			},
+			{
+				"name": "test2",
+				"file": "test.png",
+				"rarity": 5
+			}
+
+		],
+		"replies": [
+			"hi",
+			"hey"
+		]
+
+	}
+}

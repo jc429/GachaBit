@@ -1,28 +1,35 @@
-#
-# main bot functionality
-#
+##########################
+# Main Bot Functionality #
+##########################
 
 # timestamp checking 
 from datetime import datetime
 from datetime import timezone
 
 import os
+import sys
 from time import sleep
 
 import logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
+
 import requests
 
 # handles twitter stuff 
 import tweepy 
-from config import create_twitter_api
+#from config import create_twitter_api
+import config
 
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+import json
 
-#
+
+sleep_timer = 15
+
+###
 # Scan for all new mentions 
-#
+###
 def check_mentions(api, keywords):
 	logger.info("retrieving mentions")
 	check_time = datetime.now()
@@ -37,9 +44,14 @@ def check_mentions(api, keywords):
 				continue
 			# check for matching keyword (disable to reply to all mentions)
 			if any(keyword in tweet.text.lower() for keyword in keywords):
-				username = tweet.user.screen_name
-				userid = tweet.userid
-				compose_tweet(api, tweet, userid, username)
+				try:
+					username = tweet.user.screen_name
+					userid = tweet.user.id
+					compose_tweet(api, tweet, userid, username)
+				except AttributeError as e:
+					username = None
+					userid = None
+					logger.error("Failed to obtain user - {}".format(e))
 
 
 		except Exception as e:
@@ -48,12 +60,17 @@ def check_mentions(api, keywords):
 			
 	return check_time
 
-#
+###
 # Compose the reply
-#
+###
 def compose_tweet(api, src_tweet, userid, username):
-	logger.info(f"replying to {username}")
-	msg = "@%s hi :)" % username
+	if not username:
+		logger.info("invalid username, tweet abandoned")
+		return
+	
+	logger.info(f"Replying to {username}")
+	#msg = "@%s hi :)" % username
+	msg = "hey!"
 	#generate image 
 
 	img_path = generate_img()
@@ -64,9 +81,9 @@ def compose_tweet(api, src_tweet, userid, username):
 		in_reply_to_status_id = src_tweet.id,
 	)
 
-#
+###
 # Randomly selects an image from the pool and returns its filepath
-#
+###
 def generate_img():
 	img_folder = os.getcwd() + "\\img\\"
 	file_path = img_folder + "test.png"
@@ -74,29 +91,40 @@ def generate_img():
 
 	return file_path
 
-#
+###
 # Gracefully shut down the bot
-#
+###
 def shutdown():
-
+	sys.exit(0)
 	return
 
-
+###
+# Main bot loop, periodically checks for new mentions and replies to them
+###
 def reply_cycle():
-	sleep_timer = 15
-	api = create_twitter_api()
+	last_check = check_mentions(api, ["test"])
+	logger.info("replied to tweets up to %s" % last_check)
+	config.save_cfg()
+	logger.info("napping...zzz")
+	sleep(sleep_timer)
+
+###
+# initialize global variables
+###
+def init():
+	global api 
 	global last_check
+	config.load_cfg()
+	api = config.create_twitter_api()
 	last_check = None
-	while True:
-		last_check = check_mentions(api, ["test"])
-		logger.info("replied to tweets up to %s" % last_check)
 
-		logger.info("napping...zzz")
-		sleep(sleep_timer)
-
+###
+# main 
+###
 def main():
-	for var in os.environ:
-		print(var)
+	init()
+	while True:
+		reply_cycle()
 
 if __name__ == "__main__":
 	main()
