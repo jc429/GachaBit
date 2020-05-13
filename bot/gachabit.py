@@ -3,28 +3,31 @@
 ##########################
 
 # timestamp checking 
-from datetime import datetime
-from datetime import timezone
+from datetime import datetime, timezone
 
-import os
 import sys
 from time import sleep
 
 import logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger()
+
 
 import requests
 
-import tweepy 
-import config
+import tweepy
 
-import json
+from config import load_cfg, save_cfg, create_twitter_api
+from imgpicker import generate_img
 
 
+
+####################
+# Global Variables #
+####################
 sleep_timer = 15
 keywords =  ["test"]
-
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger()
+recent_replies = []
 
 ###
 # Scan for all new mentions 
@@ -92,27 +95,19 @@ def compose_reply(api, src_tweet, userid, username):
 		return
 	
 	logger.info(f"Replying to {username}")
-	#msg = "@%s hi :)" % username
-	msg = "hey!"
+	msg = "@%s hey!" % username
 	#generate image 
 
 	img_path = generate_img()
 
-	api.update_with_media(
-		img_path,
-		status = msg,
-		in_reply_to_status_id = src_tweet.id,
-	)
-
-###
-# Randomly selects an image from the pool and returns its filepath
-###
-def generate_img():
-	img_folder = os.getcwd() + "\\img\\"
-	file_path = img_folder + "test.png"
-	#logger.info(file_path)
-
-	return file_path
+	try:
+		api.update_with_media(
+			img_path,
+			status = msg,
+			in_reply_to_status_id = src_tweet.id,
+		)
+	except Exception as e:
+		logger.error("Failed to post reply - {}".format(e))
 
 ###
 # Gracefully shut down the bot
@@ -127,8 +122,8 @@ def shutdown():
 def init():
 	global api 
 	global last_check
-	config.load_cfg()
-	api = config.create_twitter_api()
+	load_cfg()
+	api = create_twitter_api()
 	last_check = None
 
 ###
@@ -139,7 +134,7 @@ def main():
 	while True:
 		last_check = check_mentions(api)
 		logger.info("Replied to tweets up to %s" % last_check)
-		config.save_cfg()
+		save_cfg()
 		logger.info("Napping...zzz")
 		sleep(sleep_timer)
 

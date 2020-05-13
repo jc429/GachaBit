@@ -1,4 +1,6 @@
-#configures twitter bot 
+###########################
+# Configuration Functions #
+###########################
 
 from keys import keys
 import tweepy
@@ -35,7 +37,7 @@ def load_cfg():
 	config.read('settings.ini')
 	try:
 		for key in config['SETTINGS']:
-			print(key)
+			print("KEY: " + key)
 	except Exception as e:
 		logger.error("Error parsing config file", exc_info=True)
 		logger.error(e)
