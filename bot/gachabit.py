@@ -93,7 +93,7 @@ def compose_reply(api, src_tweet, userid, username):
 	if not username:
 		logger.info("invalid username, tweet abandoned")
 		return
-	
+	logger.info(userid)
 	logger.info(f"Replying to {username}")
 	msg = "@%s hey!" % username
 	#generate image 
@@ -126,6 +126,8 @@ def init():
 	api = create_twitter_api()
 	last_check = None
 
+
+
 ###
 # Main bot loop, periodically checks for new mentions and replies to them.
 ###
@@ -137,10 +139,6 @@ def main():
 		save_cfg()
 		logger.info("Napping...zzz")
 		sleep(sleep_timer)
-
-
-
-
 
 if __name__ == "__main__":
 	main()
