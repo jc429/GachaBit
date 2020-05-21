@@ -45,7 +45,8 @@ class User:
 ###
 # Returns a string of (indent) spaces
 ###
-def get_indent(indentation):
+def get_indent(indentation_level):
+	indentation = indentation_level * 4
 	ind_str = ""
 	for i in range(indentation):
 		ind_str += " "
@@ -57,28 +58,37 @@ def load_user_cfg():
 
 
 def save_user_cfg():
-	indentation = 0
-	print("{")
-	indentation = 4
-	print('"users": [' )
+	indentation_level = 0
+	print(create_json_line("{", indentation_level))
+
+	indentation_level = 1
+	print(create_json_line('"users": [', indentation_level))
+
+	indentation_level = 2
 	userno = 0
 	userct = len(user_list)
-
 	for user in user_list:
-		user_str = user_list.get(user).to_json(indentation)
+		user_str = user_list.get(user).to_json(indentation_level)
 
 		userno += 1
 		if(userno < userct):
-			print(user_str + ",")
+			print(user_str + ',')
 		else:
 			print(user_str)
 		pass
+
+	indentation_level = 1
+	print(create_json_line(']', indentation_level))
 	
-	print(']')
-	indentation = 0
-	print("}")
+	indentation_level = 0
+	print(create_json_line('}', indentation_level))
 
-
+###
+# returns a line with appropriate indentation level
+###
+def create_json_line(text, ind_lvl):
+	ind_str = get_indent(ind_lvl)
+	return ind_str + text
 
 
 # temp function
