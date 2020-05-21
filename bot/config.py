@@ -10,9 +10,9 @@ logger = logging.getLogger()
 import configparser
 config = configparser.ConfigParser()
 
-#
-#retrieve tokens
-#
+###
+# retrieve tokens
+###
 def create_twitter_api():
 	consumer_key = keys['consumer_key']
 	consumer_secret = keys['consumer_secret']

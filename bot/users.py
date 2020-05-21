@@ -2,6 +2,8 @@
 # Handles user-specific data (punchcards, rate limits, etc) #
 #############################################################
 
+import json
+
 user_list = {}
 
 
@@ -15,6 +17,8 @@ class User:
 	def __init__(self, id, name = ""):
 		self.user_id = id
 		self.user_name = name
+		self.pulls = []
+		self.last_roll = 0
 
 	def get_id(self):
 		return self.user_id
@@ -22,7 +26,76 @@ class User:
 	def get_name(self):
 		return self.user_name
 	
+	def to_json(self, ind):
+		json_src = json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=ind)
+		json_arr = json_src.splitlines()
+		ind_str = get_indent(ind)
+		json_str = ""
 
+		for line in json_arr[:-1]:
+			json_str += ind_str
+			json_str += line
+			json_str += "\n"
+		line = json_arr[-1]
+		json_str += ind_str
+		json_str += line
+
+		return json_str
+
+###
+# Returns a string of (indent) spaces
+###
+def get_indent(indentation):
+	ind_str = ""
+	for i in range(indentation):
+		ind_str += " "
+	return ind_str
+
+
+def load_user_cfg():
+	pass
+
+
+def save_user_cfg():
+	indentation = 0
+	print("{")
+	indentation = 4
+	print('"users": [' )
+	userno = 0
+	userct = len(user_list)
+
+	for user in user_list:
+		user_str = user_list.get(user).to_json(indentation)
+
+		userno += 1
+		if(userno < userct):
+			print(user_str + ",")
+		else:
+			print(user_str)
+		pass
+	
+	print(']')
+	indentation = 0
+	print("}")
+
+
+
+
+# temp function
+def temp_populate_user_list():
+	u1 = User(1, "Bob")
+	u2 = User(3, "Michelle")
+	register_user(u1)
+	register_user(u2)
+	pass
+
+
+###
+# User list initialization
+###
+def init_user_list():
+	temp_populate_user_list()
+	save_user_cfg()
 
 ###
 # Adds a user to the database
@@ -50,3 +123,8 @@ def get_user_info(user_id):
 	new_user = User(user_id)
 	user_list[user_id] = new_user
 	return new_user
+
+
+
+if __name__ == "__main__":
+	init_user_list()

@@ -18,6 +18,8 @@ import tweepy
 from config import load_cfg, save_cfg, create_twitter_api
 from imgpicker import generate_img
 
+#user database
+import users
 
 
 ####################
@@ -87,7 +89,7 @@ def validate_mention(tweet):
 
 
 ###
-# Compose the reply
+# Compose a reply tweet
 ###
 def compose_reply(api, src_tweet, userid, username):
 	if not username:
@@ -117,6 +119,25 @@ def shutdown():
 	return
 
 ###
+# Main Function
+###
+def main():
+	DEBUG_BYPASS_LOOP = True
+	init()
+	if DEBUG_BYPASS_LOOP is False:
+		gachabit_loop()
+	else:
+		logger.info("Main loop bypassed - GachaBit will not Tweet in this state")
+		gachabit_debug()
+
+###
+# Debugger Function
+###
+def gachabit_debug():
+	pass
+
+
+###
 # Initialize global variables
 ###
 def init():
@@ -125,21 +146,27 @@ def init():
 	load_cfg()
 	api = create_twitter_api()
 	last_check = None
-
+	users.init_user_list()
 
 
 ###
-# Main bot loop, periodically checks for new mentions and replies to them.
+# Primary bot loop, periodically checks for new mentions and replies to them.
 ###
-def main():
-	init()
+def gachabit_loop():
 	while True:
+		logger.info("Checking mentions")
 		last_check = check_mentions(api)
 		logger.info("Replied to tweets up to %s" % last_check)
 		save_cfg()
 		logger.info("Napping...zzz")
 		sleep(sleep_timer)
 
+
+
+
+###
+# Start Program
+###
 if __name__ == "__main__":
 	main()
 
