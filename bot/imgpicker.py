@@ -16,8 +16,8 @@ def load_image_info():
 # Randomly selects an image from the pool and returns its filepath
 ###
 def generate_img():
-	img_folder = os.getcwd() + "\\img\\"
-	file_path = img_folder + "test.png"
+	img_folder = os.getcwd() + '\\img\\'
+	file_path = img_folder + 'test.png'
 	#logger.info(file_path)
 
 	return file_path

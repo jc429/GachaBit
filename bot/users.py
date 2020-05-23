@@ -2,6 +2,8 @@
 # Handles user-specific data (punchcards, rate limits, etc) #
 #############################################################
 
+import os
+import sys
 import json
 
 user_list = {}
@@ -53,35 +55,69 @@ def get_indent(indentation_level):
 	return ind_str
 
 
-def load_user_cfg():
-	pass
+def load_user_cfg(filepath):
 
-
-def save_user_cfg():
-	indentation_level = 0
-	print(create_json_line("{", indentation_level))
-
-	indentation_level = 1
-	print(create_json_line('"users": [', indentation_level))
-
-	indentation_level = 2
-	userno = 0
-	userct = len(user_list)
-	for user in user_list:
-		user_str = user_list.get(user).to_json(indentation_level)
-
-		userno += 1
-		if(userno < userct):
-			print(user_str + ',')
-		else:
-			print(user_str)
+	with open(filepath, 'r') as cfg_file:
+		json_data = json.load(cfg_file)
+		users_json = json_data['users']
+		for u_json in users_json:
+			u_id = u_json['user_id']
+			u_name = u_json['user_name']
+			u_pulls = u_json['pulls']
+			u_last_roll = u_json['last_roll']
+			user = User(u_id, u_name)
+			user.pulls = u_pulls
+			user.last_roll = u_last_roll
+			register_user(user)
+			#print(u_json)
 		pass
 
-	indentation_level = 1
-	print(create_json_line(']', indentation_level))
+
+
+
+def save_user_cfg(filepath, DEBUG_PRINT_TO_CONSOLE = False):
 	
-	indentation_level = 0
-	print(create_json_line('}', indentation_level))
+	def write_cfg():
+		# write out the json 
+		indentation_level = 0
+		print(create_json_line("{", indentation_level), file=cfg_file)
+
+		indentation_level = 1
+		print(create_json_line('"users": [', indentation_level), file=cfg_file)
+
+		indentation_level = 2
+		userno = 0
+		userct = len(user_list)
+		for user in user_list:
+			user_str = user_list.get(user).to_json(indentation_level)
+
+			userno += 1
+			if(userno < userct):
+				print(user_str + ',', file=cfg_file)
+			else:
+				print(user_str, file=cfg_file)
+			pass
+
+		indentation_level = 1
+		print(create_json_line(']', indentation_level), file=cfg_file)
+		
+		indentation_level = 0
+		print(create_json_line('}', indentation_level), file=cfg_file)
+
+		# end write_cfg
+
+	#write to console
+	if DEBUG_PRINT_TO_CONSOLE:
+		cfg_file = sys.stdout
+		write_cfg()
+
+	# open file 
+	else:
+		with open(filepath, 'w') as cfg_file:
+			write_cfg()
+			print('user list succesfully written')
+		
+	
 
 ###
 # returns a line with appropriate indentation level
@@ -104,8 +140,11 @@ def temp_populate_user_list():
 # User list initialization
 ###
 def init_user_list():
+	data_folder = os.getcwd() + '\\data\\'
+	user_path = data_folder + 'users.json'
 	temp_populate_user_list()
-	save_user_cfg()
+	#load_user_cfg(user_path)
+	save_user_cfg(user_path, True)
 
 ###
 # Adds a user to the database
