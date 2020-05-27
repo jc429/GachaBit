@@ -5,28 +5,37 @@
 import os
 import sys
 import json
+from dateutil import parser
+from datetime import datetime
 
 user_list = {}
+data_folder = os.getcwd() + '\\data\\'
+user_path = data_folder + 'users.json'
+print_to_console = True
 
 
 class User:
 	user_id = 0
 	user_name = ""
 	pulls = []
-	last_roll = 0
 
 
 	def __init__(self, id, name = ""):
 		self.user_id = id
 		self.user_name = name
 		self.pulls = []
-		self.last_roll = 0
 
 	def get_id(self):
 		return self.user_id
 
 	def get_name(self):
 		return self.user_name
+
+	def set_data(self, username):
+		self.user_name = username
+
+	def copy_data(self, other):
+		self.user_name = other.user_name
 	
 	def to_json(self, ind):
 		json_src = json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=ind)
@@ -44,6 +53,9 @@ class User:
 
 		return json_str
 
+
+
+
 ###
 # Returns a string of (indent) spaces
 ###
@@ -56,7 +68,6 @@ def get_indent(indentation_level):
 
 
 def load_user_cfg(filepath):
-
 	with open(filepath, 'r') as cfg_file:
 		json_data = json.load(cfg_file)
 		users_json = json_data['users']
@@ -64,15 +75,11 @@ def load_user_cfg(filepath):
 			u_id = u_json['user_id']
 			u_name = u_json['user_name']
 			u_pulls = u_json['pulls']
-			u_last_roll = u_json['last_roll']
 			user = User(u_id, u_name)
 			user.pulls = u_pulls
-			user.last_roll = u_last_roll
 			register_user(user)
 			#print(u_json)
-		pass
-
-
+		print("User list successfully loaded")
 
 
 def save_user_cfg(filepath, DEBUG_PRINT_TO_CONSOLE = False):
@@ -116,8 +123,13 @@ def save_user_cfg(filepath, DEBUG_PRINT_TO_CONSOLE = False):
 		with open(filepath, 'w') as cfg_file:
 			write_cfg()
 			print('user list succesfully written')
-		
-	
+
+###
+# Save the list of interacted users
+###
+def save():
+	save_user_cfg(user_path, print_to_console)
+
 
 ###
 # returns a line with appropriate indentation level
@@ -140,28 +152,30 @@ def temp_populate_user_list():
 # User list initialization
 ###
 def init_user_list():
+	print("Initializing User List...")
 	data_folder = os.getcwd() + '\\data\\'
 	user_path = data_folder + 'users.json'
-	temp_populate_user_list()
-	#load_user_cfg(user_path)
-	save_user_cfg(user_path, True)
+	load_user_cfg(user_path)
+	#temp_populate_user_list()
+	#save_user_cfg(user_path, True)
+
 
 ###
 # Adds a user to the database
 ###
 def register_user(user):
 	if user.get_id() in user_list:
+		user_list[user.get_id()]
 		return
 	user_list[user.get_id()] = user
+
 
 ###
 # Checks if a user already exists in the user database
 ###
 def user_in_list(user_id):
-	for user in user_list:
-		if user.get_id() == user_id:
-			return True
-	return False
+	return (user_id in user_list)
+
 
 ###
 # Returns the user from the database, or creates a new entry if one doesnt exist
@@ -173,6 +187,25 @@ def get_user_info(user_id):
 	user_list[user_id] = new_user
 	return new_user
 
+
+###
+# updates the user entry in the database with current info, or adds a new entry
+###
+def update_user_info(user):
+	if user.user_id in user_list:
+		user_list[user.user_id].copy_data(user)
+	else:
+		register_user(user)
+
+
+###
+# Logs a user
+###
+def log_user(id, username, timestamp):
+	user = get_user_info(id)
+	user.set_data(username)
+	update_user_info(user)
+	print("User Logged: %s \n" % username)
 
 
 if __name__ == "__main__":

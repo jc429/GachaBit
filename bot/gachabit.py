@@ -30,31 +30,41 @@ keywords =  ["test"]
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 recent_replies = []
+last_check = datetime.utcnow()
 
 ###
 # Scan for all new mentions 
 ###
-def check_mentions(api):
-	logger.info("retrieving mentions")
-	check_time = datetime.now()
-	mentions = tweepy.Cursor(api.mentions_timeline).items()
-	for tweet in mentions:
+def check_mentions(api, DEBUG_SKIP_REPLY = False):
+	
+		
+	check_time = datetime.utcnow()
+	logger.info("Retrieving mentions since %s" % last_check)
+	mentions = tweepy.Cursor(api.mentions_timeline, since=last_check).items(20)
+	for e, tweet in enumerate(mentions):
+		logger.info("#%s" % e)
+		logger.info("tweeted at %s" % tweet.created_at)
 		try:
 			# Only check tweets that haven't previously been checked
 			tweet_timestamp = tweet.created_at
-			if last_check is not None:
-				if tweet_timestamp < last_check:
-					continue
-			
-			if validate_mention(tweet):
-				try:
-					username = tweet.user.screen_name
-					userid = tweet.user.id
-					compose_reply(api, tweet, userid, username)
-				except AttributeError as e:
-					username = None
-					userid = None
-					logger.error("Failed to obtain user - {}".format(e))
+			if tweet_timestamp < last_check:
+				#print("tweet time: %s" % tweet_timestamp)
+				#print("last check: %s" % last_check)
+				logger.info("Reached a tweet that is too old. Breaking loop.")
+				break
+			else:
+				if validate_mention(tweet):
+					try:
+						username = tweet.user.screen_name
+						userid = tweet.user.id
+						users.log_user(userid, username, tweet_timestamp)
+						if DEBUG_SKIP_REPLY is False:
+							compose_reply(api, tweet, userid, username)
+							pass
+					except AttributeError as e:
+						username = None
+						userid = None
+						logger.error("Failed to obtain user - {}".format(e))
 
 		except Exception as e:
 			logger.error("Failed while fetching mentions - {}".format(e))
@@ -118,23 +128,6 @@ def shutdown():
 	sys.exit(0)
 	return
 
-###
-# Main Function
-###
-def main():
-	DEBUG_BYPASS_LOOP = True
-	init()
-	if DEBUG_BYPASS_LOOP is False:
-		gachabit_loop()
-	else:
-		logger.info("Main loop bypassed - GachaBit will not Tweet in this state")
-		gachabit_debug()
-
-###
-# Debugger Function
-###
-def gachabit_debug():
-	pass
 
 
 ###
@@ -142,10 +135,9 @@ def gachabit_debug():
 ###
 def init():
 	global api 
-	global last_check
-	load_cfg()
 	api = create_twitter_api()
-	last_check = None
+	logger.info("Bot Started: %s" %  datetime.utcnow())
+	load_cfg()
 	users.init_user_list()
 
 
@@ -153,6 +145,7 @@ def init():
 # Primary bot loop, periodically checks for new mentions and replies to them.
 ###
 def gachabit_loop():
+	last_check = datetime.utcnow()
 	while True:
 		logger.info("Checking mentions")
 		last_check = check_mentions(api)
@@ -162,6 +155,33 @@ def gachabit_loop():
 		sleep(sleep_timer)
 
 
+###
+# Debugger Function
+###
+def gachabit_debug():
+	last_check = datetime.utcnow()
+	while True:
+		logger.info("D: Checking mentions")
+		last_check = check_mentions(api, True)
+		logger.info("D: Replied to tweets up to %s" % last_check)
+		save_cfg()
+		users.save()
+		logger.info("D: Napping...zzz...")
+		sleep(sleep_timer)
+
+
+###
+# Main Function
+###
+def main():
+	DEBUG_MODE = True
+	init()
+	if DEBUG_MODE:
+		logger.info("Main loop bypassed - GachaBit will not Tweet in this state")
+		##logger.info("Override Enabled: Will not post replies")
+		gachabit_debug()
+	else:
+		gachabit_loop()
 
 
 ###
