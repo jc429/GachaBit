@@ -32,7 +32,9 @@ def create_twitter_api():
 	return api
 
 
-
+###
+# Load Settings
+###
 def load_cfg():
 	config.read('settings.ini')
 	try:

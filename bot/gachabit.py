@@ -16,7 +16,7 @@ import requests
 import tweepy
 
 from config import load_cfg, save_cfg, create_twitter_api
-from imgpicker import generate_img
+import imgpicker
 
 #user database
 import users
@@ -35,8 +35,8 @@ last_check = datetime.utcnow()
 ###
 # Scan for all new mentions 
 ###
-def check_mentions(api, DEBUG_SKIP_REPLY = False):
-	
+def check_mentions(api, DEBUG_MODE = False):
+	DEBUG_SKIP_REPLY = False
 		
 	check_time = datetime.utcnow()
 	logger.info("Retrieving mentions since %s" % last_check)
@@ -58,7 +58,7 @@ def check_mentions(api, DEBUG_SKIP_REPLY = False):
 						username = tweet.user.screen_name
 						userid = tweet.user.id
 						users.log_user(userid, username, tweet_timestamp)
-						if DEBUG_SKIP_REPLY is False:
+						if not (DEBUG_MODE and DEBUG_SKIP_REPLY):
 							compose_reply(api, tweet, userid, username)
 							pass
 					except AttributeError as e:
@@ -107,10 +107,13 @@ def compose_reply(api, src_tweet, userid, username):
 		return
 	logger.info(userid)
 	logger.info(f"Replying to {username}")
-	msg = "@%s hey!" % username
+	
 	#generate image 
 
-	img_path = generate_img()
+	img_path = imgpicker.random_image()
+	quote = imgpicker.random_quote()
+	msg = "@%s " % username
+	msg += quote
 
 	try:
 		api.update_with_media(
@@ -144,29 +147,15 @@ def init():
 ###
 # Primary bot loop, periodically checks for new mentions and replies to them.
 ###
-def gachabit_loop():
+def gachabit_loop(DEBUG_MODE = False):
+	global last_check
 	last_check = datetime.utcnow()
 	while True:
 		logger.info("Checking mentions")
-		last_check = check_mentions(api)
+		last_check = check_mentions(api, DEBUG_MODE)
 		logger.info("Replied to tweets up to %s" % last_check)
 		save_cfg()
-		logger.info("Napping...zzz")
-		sleep(sleep_timer)
-
-
-###
-# Debugger Function
-###
-def gachabit_debug():
-	last_check = datetime.utcnow()
-	while True:
-		logger.info("D: Checking mentions")
-		last_check = check_mentions(api, True)
-		logger.info("D: Replied to tweets up to %s" % last_check)
-		save_cfg()
-		users.save()
-		logger.info("D: Napping...zzz...")
+		logger.info("Napping...zzz...")
 		sleep(sleep_timer)
 
 
@@ -178,8 +167,7 @@ def main():
 	init()
 	if DEBUG_MODE:
 		logger.info("Main loop bypassed - GachaBit will not Tweet in this state")
-		##logger.info("Override Enabled: Will not post replies")
-		gachabit_debug()
+		gachabit_loop(True)
 	else:
 		gachabit_loop()
 

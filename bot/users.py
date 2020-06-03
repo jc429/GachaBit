@@ -11,6 +11,7 @@ from datetime import datetime
 user_list = {}
 data_folder = os.getcwd() + '\\data\\'
 user_path = data_folder + 'users.json'
+print_to_file = True
 print_to_console = True
 
 
@@ -62,7 +63,7 @@ class User:
 def get_indent(indentation_level):
 	indentation = indentation_level * 4
 	ind_str = ""
-	for i in range(indentation):
+	for _ in range(indentation):
 		ind_str += " "
 	return ind_str
 
@@ -119,7 +120,7 @@ def save_user_cfg(filepath, DEBUG_PRINT_TO_CONSOLE = False):
 		write_cfg()
 
 	# open file 
-	else:
+	if print_to_file:
 		with open(filepath, 'w') as cfg_file:
 			write_cfg()
 			print('user list succesfully written')
@@ -165,7 +166,7 @@ def init_user_list():
 ###
 def register_user(user):
 	if user.get_id() in user_list:
-		user_list[user.get_id()]
+		#user_list[user.get_id()]
 		return
 	user_list[user.get_id()] = user
 
