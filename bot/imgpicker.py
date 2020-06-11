@@ -61,6 +61,7 @@ def load_image_json(filepath):
 def init_img_list():
 	print('Initializing Image List...')
 	load_image_json(gallery_path)
+	print('Image List successfully initialized!')
 
 
 ###
@@ -79,7 +80,10 @@ def register_img(img):
 ###
 def random_image():
 	#TODO: weighted probability image generation
-	file_path = img_folder + 'test.png'
+
+	ikey = random.choice(list(image_list))
+	img = image_list[ikey]
+	file_path = img_folder + img.filename
 	#logger.info(file_path)
 
 	return file_path
@@ -88,13 +92,18 @@ def random_image():
 # Randomly selects and returns a quote
 ###
 def random_quote():
-	r = random.randint(0,len(quote_list))
-	quote = quote_list[r]
-	
-	print("Quote Selected: " + quote)
 
-	return quote
+	r = random.randint(0, len(quote_list)-1)
+	try:
+		quote = quote_list[r]
+		print('Quote Selected: ' + quote)
+		return quote
+	except Exception:
+		print('Array out of Bounds')
+		return ''
 
 
 if __name__ == "__main__":
 	init_img_list()
+	random_quote()
+	

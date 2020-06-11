@@ -80,7 +80,7 @@ def load_user_cfg(filepath):
 			user.pulls = u_pulls
 			register_user(user)
 			#print(u_json)
-		print("User list successfully loaded")
+		print("User file successfully loaded")
 
 
 def save_user_cfg(filepath, DEBUG_PRINT_TO_CONSOLE = False):
@@ -123,7 +123,7 @@ def save_user_cfg(filepath, DEBUG_PRINT_TO_CONSOLE = False):
 	if print_to_file:
 		with open(filepath, 'w') as cfg_file:
 			write_cfg()
-			print('user list succesfully written')
+			print('user file succesfully written')
 
 ###
 # Save the list of interacted users
@@ -140,25 +140,20 @@ def create_json_line(text, ind_lvl):
 	return ind_str + text
 
 
-# temp function
-def temp_populate_user_list():
-	u1 = User(1, "Bob")
-	u2 = User(3, "Michelle")
-	register_user(u1)
-	register_user(u2)
-	pass
 
 
 ###
 # User list initialization
 ###
 def init_user_list():
-	print("Initializing User List...")
+	print('Initializing User List...')
 	data_folder = os.getcwd() + '\\data\\'
 	user_path = data_folder + 'users.json'
 	load_user_cfg(user_path)
 	#temp_populate_user_list()
 	#save_user_cfg(user_path, True)
+	print('User List successfully initialized!')
+	print('')
 
 
 ###
@@ -206,7 +201,7 @@ def log_user(id, username, timestamp):
 	user = get_user_info(id)
 	user.set_data(username)
 	update_user_info(user)
-	print("User Logged: %s \n" % username)
+	print('User Logged: %s \n' % username)
 
 
 if __name__ == "__main__":

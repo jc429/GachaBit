@@ -26,9 +26,9 @@ def create_twitter_api():
 	try:
 		api.verify_credentials()
 	except Exception as e:
-		logger.error("Error creating API", exc_info=True)
+		logger.error('Error creating API', exc_info=True)
 		raise e
-	logger.info("API successfully created")
+	logger.info('API successfully created')
 	return api
 
 
@@ -39,13 +39,11 @@ def load_cfg():
 	config.read('settings.ini')
 	try:
 		for key in config['SETTINGS']:
-			print("KEY: " + key)
+			#print("KEY: " + key)
+			pass
 	except Exception as e:
-		logger.error("Error parsing config file", exc_info=True)
+		logger.error('Error parsing config file', exc_info=True)
 		logger.error(e)
-
-
-
 
 
 def save_cfg():
