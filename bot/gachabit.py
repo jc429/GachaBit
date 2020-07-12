@@ -2,34 +2,36 @@
 # Main Bot Functionality #
 ##########################
 
+
+from time import sleep
 # timestamp checking 
 from datetime import datetime, timezone
 
+
 import sys
-from time import sleep
 
 import logging
-
 
 import requests
 
 import tweepy
 
-from config import load_cfg, save_cfg, create_twitter_api
-import imgpicker
-
-#user database
+# bot config 
+import config
+# user database
 import users
+# image picker 
+import imgpicker
 
 
 ####################
 # Global Variables #
 ####################
 sleep_timer = 15
+check_keywords = False
 keywords =  ["test"]
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
-recent_replies = []
 last_check = datetime.utcnow()
 
 ###
@@ -86,7 +88,6 @@ def validate_mention(tweet):
 	# TODO - Make sure user has not already received a reply in the recent past
 
 	# Check for matching keyword (disable to reply to all mentions)
-	check_keywords = False
 	if check_keywords:
 		has_keywords = False
 		if any(keyword in tweet.text.lower() for keyword in keywords):
@@ -145,9 +146,9 @@ def shutdown():
 ###
 def init():
 	global api 
-	api = create_twitter_api()
+	api = config.create_twitter_api()
 	logger.info('Bot Started: %s' %  datetime.utcnow())
-	load_cfg()
+	config.load_cfg()
 	imgpicker.init_img_list()
 	users.init_user_list()
 
@@ -162,7 +163,7 @@ def gachabit_loop(DEBUG_MODE = False):
 		logger.info("Checking mentions")
 		last_check = check_mentions(api, DEBUG_MODE)
 		logger.info("Replied to tweets up to %s" % last_check)
-		save_cfg()
+		config.save_cfg()
 		logger.info("Napping...zzz...")
 		sleep(sleep_timer)
 

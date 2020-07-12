@@ -12,8 +12,10 @@ data_folder = os.getcwd() + '\\data\\'
 gallery_path = data_folder + 'gallery.json'
 
 # dict of GachaImages 
-image_list = {}
-# just a simple list of strings to randomly select
+image_dict = {}
+# weighted list used for image selection
+images_weighted = []
+# a simple list of strings to randomly select
 quote_list = []
 
 class GachaImage:
@@ -68,9 +70,20 @@ def init_img_list():
 # Adds an image to the database
 ###
 def register_img(img):
-	if img.get_filename() in image_list:
+	if img.get_filename() in image_dict:
 		return
-	image_list[img.get_filename()] = img
+	image_dict[img.get_filename()] = img
+
+	rty = 0
+	if img.rarity < 0:
+		rty = 5
+	elif img.rarity > 5:
+		rty = 1
+	else:
+		rty = 6 - img.rarity
+	
+	for _ in rty:
+		images_weighted += img.get_filename() 
 
 
 
@@ -79,10 +92,9 @@ def register_img(img):
 # Randomly selects an image from the pool and returns its filepath
 ###
 def random_image():
-	#TODO: weighted probability image generation
 
-	ikey = random.choice(list(image_list))
-	img = image_list[ikey]
+	ikey = random.choice(images_weighted)
+	img = image_dict[ikey]
 	file_path = img_folder + img.filename
 	#logger.info(file_path)
 
